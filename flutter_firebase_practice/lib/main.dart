@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -45,18 +44,42 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: getData(),
+      // body: FutureBuilder(
+      //   future: getData(),
+      //   builder: (_, snapshot) {
+      //     return ListView.builder(
+      //         itemCount: snapshot.data?.length ?? 0,
+      //         itemBuilder: (_,index){
+      //          DocumentSnapshot data = snapshot.data[index];
+      //           return ListTile(
+      //             title: Text(data["name"]),
+      //           );
+      //         },
+      //     );
+      //   },
+      // ),
+      body: StreamBuilder(
+        // ignore: deprecated_member_use
+        stream: Firestore.instance.collection("countries").snapshots(),
+        // ignore: missing_return
         builder: (_, snapshot) {
-          return ListView.builder(
-              itemCount: snapshot.data?.length ?? 0,
-              itemBuilder: (_,index){
-               DocumentSnapshot data = snapshot.data[index];
-                return ListTile(
-                  title: Text(data["name"]),
-                );
+          if (!snapshot.hasData) {
+            return Center(
+              child: Text("Loading"),
+            );
+          } else {
+            return GridView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: snapshot.data.documents.length,
+              gridDelegate:
+                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+              // ignore: missing_return
+              itemBuilder: (_, index) {
+                DocumentSnapshot data = snapshot.data.documents[index];
+                return Card(child: GridTile(child: Image.network(data["img"])));
               },
-          );
+            );
+          }
         },
       ),
     );
